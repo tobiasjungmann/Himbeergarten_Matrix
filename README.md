@@ -61,8 +61,6 @@ Save file and reboot RPi.
 
 [Netifaces](https://github.com/al45tair/netifaces) (MIT-License)
 
-[Firebase](https://bitbucket.org/joetilsed/firebase/src/master/) (MIT-License)
-
 [Luma.LED_Matrix: Display drivers for MAX7219](https://luma-led-matrix.readthedocs.io/en/latest/intro.html) (MIT-License)
 
 [Python GPIO](https://sourceforge.net/projects/raspberry-gpio-python/) (MIT-License)
