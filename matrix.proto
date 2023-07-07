@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package smart_home;
+option java_package = "com.example.rpicommunicator_v1";
+service Matrix {
+  rpc outletOn(GPIORequest) returns (GPIOReply) {}
+  rpc arduinoOn(GPIORequest) returns (GPIOReply) {}
+  rpc getStatus(EmptyMsg) returns (StatusReply) {}
+
+  rpc matrixSetMode(MatrixChangeModeRequest) returns (MatrixChangeModeReply) {}
+  rpc matrixSetActivated(MatrixActivationRequest) returns (EmptyMsg) {}
+  rpc matrixSetBrightness(MatrixBrightnessRequest) returns (EmptyMsg) {}
+
+}
+
+message GPIORequest{
+  GPIOInstances id = 1;
+  bool on = 2;
+}
+
+message GPIOReply{
+  repeated bool statusList = 1;
+}
+
+message EmptyMsg{
+}
+
+message StatusReply{
+  repeated bool gpios = 1;
+  int32 matrixBrightness = 2;
+  MatrixState matrixState = 3;
+}
+
+message MatrixBrightnessRequest{
+  int32 brightness = 1;
+}
+
+message MatrixActivationRequest{
+  bool activated = 1;
+}
+
+message MatrixChangeModeRequest{
+  MatrixState state = 1;
+  string start = 2;
+  string destination = 3;
+}
+
+message MatrixChangeModeReply{
+  MatrixState state = 1;
+}
+
+enum GPIOInstances{
+  GPIO_OUTLET_1 = 0;
+  GPIO_OUTLET_2 = 1;
+  GPIO_OUTLET_3 = 2;
+  GPIO_ARDUINO_1 = 3;
+  GPIO_ARDUINO_2 = 4;
+}
+
+enum MatrixState{
+  MATRIX_NONE = 0;
+  MATRIX_TIME = 1;
+  MATRIX_WEATHER = 2;
+  MATRIX_SPOTIFY = 3;
+  MATRIX_MVV = 4;
+  MATRIX_STANDBY = 5;
+  MATRIX_TERMINATE = 6;
+}
