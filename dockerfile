@@ -16,5 +16,6 @@ RUN mkdir -p proto
 #RUN cd ..
 RUN python -m grpc_tools.protoc \
 	 --proto_path=. --python_out=./proto/ --grpc_python_out=./proto/ matrix.proto 
+RUN python fix_proto_imports.py proto/matrix_pb2_grpc.py proto.
 
 CMD ["python", "./main.py"]
