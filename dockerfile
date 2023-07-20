@@ -8,14 +8,14 @@ RUN pip install --no-cache-dir --upgrade pip \
   && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN dir -s  
-#RUN ./generate_proto.sh
+EXPOSE 8010 12345
+
 RUN mkdir -p proto
-#RUN cd proto
-#RUN python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/*.proto
-#RUN cd ..
 RUN python -m grpc_tools.protoc \
-	 --proto_path=. --python_out=./proto/ --grpc_python_out=./proto/ matrix.proto 
+	--proto_path=. \
+	--python_out=./proto/ \ 
+	--grpc_python_out=./proto/ \
+	matrix.proto 
 RUN python fix_proto_imports.py proto/matrix_pb2_grpc.py proto.
 
 CMD ["python", "./main.py"]

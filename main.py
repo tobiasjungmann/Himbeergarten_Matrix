@@ -6,6 +6,7 @@ from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 
 import socket
+from socket import gethostname, gethostbyname
 import RPi.GPIO as GPIO
 
 import grpc
@@ -133,7 +134,12 @@ def init_gpios():
 if __name__ == '__main__':
     host = get_ip()
     print(host)
+    hostname = socket.gethostname()
+	# Get the IP address associated with the hostname
+    host_ip = socket.gethostbyname(hostname)
+    print(host_ip)
+#    print(socket.gethostbyname('host.docker.internal'))
     init_gpios()
     matrix_thread_array[0] = showTime('Thread 1', device)
     matrix_thread_array[0].start()
-    serve(host)
+    serve(host)#"192.168.178.63")
