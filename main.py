@@ -18,7 +18,7 @@ from proto.matrix_pb2 import GPIOReply, StatusReply, EmptyMsg, MatrixState, Matr
 from proto.matrix_pb2_grpc import MatrixServicer, add_MatrixServicer_to_server
 from matrix.showTime import showTime
 import argparse
-
+import os
 # Used GPIO Pins
 RELAIS1_GPIO = 19
 RELAIS2_GPIO = 26
@@ -36,11 +36,7 @@ matrix_state = [MatrixState.MATRIX_TIME]
 serial = spi(port=0, device=0, gpio=noop())
 device = max7219(serial, cascaded=4, block_orientation=-90, rotate=0, blocks_arranged_in_reverse_order=False)
 brightness = 255
-
-#PORT_TESTING = 8010
-#PORT_PRODUCTION = 12345
-#port = PORT_TESTING
-
+HOME_ASSISTANT_TOKEN=os.environ["HOME_ASSISTANT_TOKEN"]
 
 class MatrixServicer(MatrixServicer):
     def outletOn(self, request, context):
@@ -65,13 +61,14 @@ class MatrixServicer(MatrixServicer):
             matrix_thread_array[0] = None
         matrix_state[0]=request.state
         if request.state == MatrixState.MATRIX_TIME:
-            matrix_thread_array[0] = showTime('Thread 1', device)
+            matrix_thread_array[0] = showTime('Thread 1', device,HOME_ASSISTANT_TOKEN)
         elif request.state == MatrixState.MATRIX_WEATHER:
             matrix_thread_array[0] = show_weather('Thread 1', device)
         elif request.state == MatrixState.MATRIX_SPOTIFY:
             matrix_thread_array[0] = showSpotify('Thread 1', device)
         elif request.state == MatrixState.MATRIX_MVV:
-            matrix_thread_array[0] = showMVV('Thread 1', device, request.start, request.destination)
+            print("Currently not available - waiting for new API")
+           # matrix_thread_array[0] = showMVV('Thread 1', device, request.start, request.destination)
         elif request.state == MatrixState.MATRIX_QUIT:
             exit()
 
@@ -121,13 +118,14 @@ def init_gpios():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, help="Define the port of the API")
-
+   # parser.add_argument("--HOME_ASSISTANT_TOKEN", type=str, help="Access token")
     args = parser.parse_args()
 
+    #HOME_ASSISTANT_TOKEN=args.HOME_ASSISTANT_TOKEN
     if args.port is not None:
         print(f"Port number provided: {args.port}")
         init_gpios()
-        matrix_thread_array[0] = showTime('Thread 1', device)
+        matrix_thread_array[0] = showTime('Thread 1', device,HOME_ASSISTANT_TOKEN)
         matrix_thread_array[0].start()
         serve("0.0.0.0", args.port)
     else:
