@@ -1,0 +1,13 @@
+
+# Used GPIO Pins
+RELAIS1_GPIO = 19
+RELAIS2_GPIO = 26
+
+ARDUINO1_GPIO = 13
+ARDUINO2_GPIO = 6
+OUTLET_1_GPIO = 14
+OUTLET_2_GPIO = 3
+OUTLET_3_GPIO = 4
+
+INTERVAL_BETWEEN_CLOCK_UPDATES = 1  # pause between updates in seconds
+INTERVAL_BETWEEN_SENSOR_DATA = 10  # show the sensor info every x seconds
