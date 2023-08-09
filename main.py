@@ -17,6 +17,7 @@ from matrix.showWeather import show_weather
 from proto.matrix_pb2 import GPIOReply, StatusReply, EmptyMsg, MatrixState, MatrixChangeModeReply
 from proto.matrix_pb2_grpc import MatrixServicer, add_MatrixServicer_to_server
 from matrix.showTime import showTime
+import argparse
 
 # Used GPIO Pins
 RELAIS1_GPIO = 19
@@ -36,9 +37,9 @@ serial = spi(port=0, device=0, gpio=noop())
 device = max7219(serial, cascaded=4, block_orientation=-90, rotate=0, blocks_arranged_in_reverse_order=False)
 brightness = 255
 
-PORT_TESTING = 8010
-PORT_PRODUCTION = 12345
-port = PORT_TESTING
+#PORT_TESTING = 8010
+#PORT_PRODUCTION = 12345
+#port = PORT_TESTING
 
 
 class MatrixServicer(MatrixServicer):
@@ -85,7 +86,7 @@ class MatrixServicer(MatrixServicer):
         return EmptyMsg()
 
 
-def serve(address):
+def serve(address,port):
     print("Starting Server...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     add_MatrixServicer_to_server(
@@ -97,20 +98,6 @@ def serve(address):
     print("Waiting for connections...")
     server.wait_for_termination()
     print("Terminated.")
-
-
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
 
 
 def init_gpios():
@@ -132,14 +119,17 @@ def init_gpios():
 
 
 if __name__ == '__main__':
-    host = get_ip()
-    print(host)
-    hostname = socket.gethostname()
-	# Get the IP address associated with the hostname
-    host_ip = socket.gethostbyname(hostname)
-    print(host_ip)
-#    print(socket.gethostbyname('host.docker.internal'))
-    init_gpios()
-    matrix_thread_array[0] = showTime('Thread 1', device)
-    matrix_thread_array[0].start()
-    serve(host)#"192.168.178.63")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, help="Define the port of the API")
+
+    args = parser.parse_args()
+
+    if args.port is not None:
+        print(f"Port number provided: {args.port}")
+        init_gpios()
+        matrix_thread_array[0] = showTime('Thread 1', device)
+        matrix_thread_array[0].start()
+        serve("0.0.0.0", args.port)
+    else:
+        print("Port number not provided.")
+
