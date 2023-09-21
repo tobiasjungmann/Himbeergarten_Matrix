@@ -10,7 +10,9 @@
 #include <HTTPClient.h>
 //#include <Arduino_JSON.h>
 #include "credentials.h"
+
 #include <MD_MAX72xx.h>
+#include <MD_Parola.h>
 #include <SPI.h>
 
 #include <SpotifyArduino.h>
@@ -43,15 +45,18 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
 #define DATA_PIN 27  // or MOSI
 #define CS_PIN 14    // or SS
 
-#define CHAR_SPACING 1  // pixels between characters
-MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+#define CHAR_SPACING 4  // pixels between characters
+//MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_Parola mx = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // Weather
 String city = "Munich";
 String countryCode = "DE";
 String jsonBuffer;
 
-
+void printTime( char* pMsg) {
+}
+/*
 void printText(uint8_t modStart, uint8_t modEnd, char* pMsg) {
   uint8_t state = 0;
   uint8_t curLen;
@@ -124,7 +129,7 @@ void scrollText(const char* p) {
     }
   }
 }
-
+*/
 
 /*
 // TODO combine with the poti
@@ -273,18 +278,24 @@ void showTemperatureOutside() {
   }
 }*/
 
+// todo  P.displayShutdown(true); if it is switchd off?
+
+
 void showTime() {
   // todo don't load it from the internet everytime
+ //         mx.setTextAlignment(PA_CENTER);
+ //       mx.displayClear();
+ //       mx.displayReset();
   timeClient.update();
   int hour = timeClient.getHours();
   int minute = timeClient.getMinutes();
   char message[6] = "00:00";
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.println(minute);
   sprintf(message, "%02d:%02d", hour, minute);
-
-  printText(0, MAX_DEVICES - 1, message);
+  Serial.println(message);
+  mx.displayText(message, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
+    mx.displayAnimate();
+ // printText(1, MAX_DEVICES-1, message);
+ // printTime(message);
 }
 
 void printCurrentlyPlayingToSerial(CurrentlyPlaying currentlyPlaying) {
@@ -310,8 +321,8 @@ void printCurrentlyPlayingToSerial(CurrentlyPlaying currentlyPlaying) {
     Serial.println(duration);
     Serial.println();
     char message[256] = "";
-    sprintf(message, "%s - %s", currentlyPlaying.trackName, currentlyPlaying.albumName);
-    scrollText(message);
+    sprintf(message, "%s - %s", currentlyPlaying.trackName, currentlyPlaying.artists[0].artistName);
+    //scrollText(message);
   } else {
     Serial.println("Spotify is currently not playing");
   }
@@ -336,10 +347,11 @@ void showSpotifyCurrentlyPlaying() {
 
 void loop() {
   // for(int i=0;i<20;i++){
+    mx.setIntensity(50);
   showTime();
   delay(1000);
   //}
-  showSpotifyCurrentlyPlaying();
+ // showSpotifyCurrentlyPlaying();
   //showTemperatureOutside();
   delay(1000);
 }
