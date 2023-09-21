@@ -54,7 +54,7 @@ String city = "Munich";
 String countryCode = "DE";
 String jsonBuffer;
 
-void printTime( char* pMsg) {
+void printTime(char* pMsg) {
 }
 /*
 void printText(uint8_t modStart, uint8_t modEnd, char* pMsg) {
@@ -283,9 +283,9 @@ void showTemperatureOutside() {
 
 void showTime() {
   // todo don't load it from the internet everytime
- //         mx.setTextAlignment(PA_CENTER);
- //       mx.displayClear();
- //       mx.displayReset();
+  //         mx.setTextAlignment(PA_CENTER);
+  //       mx.displayClear();
+  //       mx.displayReset();
   timeClient.update();
   int hour = timeClient.getHours();
   int minute = timeClient.getMinutes();
@@ -293,22 +293,17 @@ void showTime() {
   sprintf(message, "%02d:%02d", hour, minute);
   Serial.println(message);
   mx.displayText(message, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
-    mx.displayAnimate();
- // printText(1, MAX_DEVICES-1, message);
- // printTime(message);
+  mx.displayAnimate();
 }
 
-void printCurrentlyPlayingToSerial(CurrentlyPlaying currentlyPlaying) {
-
-  Serial.print("Is Playing: ");
+void printCurrentlyPlayingSpotify(CurrentlyPlaying currentlyPlaying) {
   if (currentlyPlaying.isPlaying) {
-    Serial.print("Track: ");
+    /* Serial.print("Track: ");
     Serial.println(currentlyPlaying.trackName);
     for (int i = 0; i < currentlyPlaying.numArtists; i++) {
       Serial.print("Name: ");
       Serial.println(currentlyPlaying.artists[i].artistName);
     }
-
     Serial.print("Album: ");
     Serial.println(currentlyPlaying.albumName);
 
@@ -319,22 +314,29 @@ void printCurrentlyPlayingToSerial(CurrentlyPlaying currentlyPlaying) {
     Serial.print(progress);
     Serial.print(" of ");
     Serial.println(duration);
-    Serial.println();
+    Serial.println();*/
     char message[256] = "";
     sprintf(message, "%s - %s", currentlyPlaying.trackName, currentlyPlaying.artists[0].artistName);
+    mx.displayAnimate();
+    mx.displayScroll(message, PA_LEFT, PA_PRINT, 25);
+    Serial.println("Message to print");
+    Serial.println(message);
+    //   mx.displayText(message, PA_LEFT, 25, 500, PA_SCROLL_LEFT, PA_PRINT);
+
+    // mx.displayReset();
+    //   mx.displayText("mge", PA_LEFT, 25, 2000, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+    //       mx.displayText("Your Scrolling Text Here", PA_CENTER, PA_SCROLL_LEFT, 1000);
+    //mx.run();
+    //mx.displayAnimate();
     //scrollText(message);
+    displayScrollText(message);
   } else {
     Serial.println("Spotify is currently not playing");
   }
 }
 
 void showSpotifyCurrentlyPlaying() {
-  // Serial.print("Free Heap: ");
-  // Serial.println(ESP.getFreeHeap());
-
-  //Serial.println("getting currently playing song:");
-  // Market can be excluded if you want e.g. spotify.getCurrentlyPlaying()
-  int status = spotify.getCurrentlyPlaying(printCurrentlyPlayingToSerial, SPOTIFY_MARKET);
+  int status = spotify.getCurrentlyPlaying(printCurrentlyPlayingSpotify, SPOTIFY_MARKET);
   if (status == 200) {
     Serial.println("Successfully got currently playing");
   } else if (status == 204) {
@@ -344,14 +346,18 @@ void showSpotifyCurrentlyPlaying() {
     Serial.println(status);
   }
 }
+void displayScrollText(char* message){
+  mx.displayClear();
+  mx.displayScroll(message, PA_RIGHT, PA_SCROLL_LEFT, 25);
+  while (!mx.displayAnimate()) { ; }
+}
 
 void loop() {
-  // for(int i=0;i<20;i++){
-    mx.setIntensity(50);
+   for(int i=0;i<20;i++){
+  mx.setIntensity(50);
   showTime();
   delay(1000);
-  //}
- // showSpotifyCurrentlyPlaying();
+  }
+  showSpotifyCurrentlyPlaying();
   //showTemperatureOutside();
-  delay(1000);
 }
