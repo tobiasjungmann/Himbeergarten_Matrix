@@ -1,7 +1,9 @@
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #elif defined(ESP32)
 #include <WiFi.h>
+#include <HTTPClient.h>
 #endif
 
 #include <WiFiClientSecure.h>
@@ -11,7 +13,6 @@
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
 #include <SPI.h>
-#include <HTTPClient.h>
 //#include <Arduino_JSON.h>
 #include "credentials.h"
 
@@ -20,6 +21,9 @@
 #include <SpotifyArduinoCert.h>
 #include <ArduinoJson.h>
 
+
+#define GPIO_POTI 36
+#define GPIO_SWITCH_SPOTIFY 23
 
 // Spotify
 #define SPOTIFY_MARKET "DE"
@@ -42,9 +46,15 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4
 
+#if defined(ESP8266)
+#define CLK_PIN 6   // or SCK
+#define CS_PIN 7    // or SS
+#define DATA_PIN 8  // or MOSI
+#elif defined(ESP32)
 #define CLK_PIN 12   // or SCK
-#define DATA_PIN 27  // or MOSI
 #define CS_PIN 14    // or SS
+#define DATA_PIN 27  // or MOSI
+#endif
 
 #define CHAR_SPACING 4  // pixels between characters
 //MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
@@ -68,7 +78,8 @@ void readFromHA() {
 
   // Set the authorization header
   String bearerToken = "Bearer " + String(homeAssistantToken);
-  http.begin(apiEndpoint.c_str());
+  WiFiClient client;
+  http.begin(client, apiEndpoint.c_str());
   http.addHeader("Authorization", bearerToken.c_str());
 
   // Send GET request
@@ -89,6 +100,9 @@ void readFromHA() {
 void setup() {
   Serial.begin(115200);
   mx.begin();
+
+  pinMode(GPIO_POTI, INPUT);
+  pinMode(GPIO_SWITCH_SPOTIFY, INPUT_PULLDOWN);
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
@@ -211,13 +225,23 @@ void displayScrollText(char* message) {
   while (!mx.displayAnimate()) { ; }
 }
 
+void updateBrightness(){
+   int analogValue = analogRead(36);
+  float brightness = analogValue/256;
+  mx.setIntensity(brightness);
+}
 void loop() {
-  /*  for (int i = 0; i < 1; i++) {
-    mx.setIntensity(10);
+  for (int i = 0; i < 5; i++) {
+    updateBrightness();
     showTime();
     delay(1000);
   }
-  showSpotifyCurrentlyPlaying();*/
-  showTemperatureOutside();
-  delay(100000);
+  Serial.println("Digital: ");
+  int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
+  Serial.println(digitalValue);
+  if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
+    showSpotifyCurrentlyPlaying();
+  }
+  //showTemperatureOutside();
+  //delay(100000);
 }
