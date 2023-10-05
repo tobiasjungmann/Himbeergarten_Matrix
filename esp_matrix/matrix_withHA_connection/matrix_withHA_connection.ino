@@ -65,6 +65,11 @@ String city = "Munich";
 String countryCode = "DE";
 String jsonBuffer;
 
+#define MAX_TEMP_AGE 60;
+int outsideTempAge = MAX_TEMP_AGE;
+char outsideTempValue[8] = "00:00";
+
+#define CONTINUOUS_CLOCK_SECONDS 15
 void readFromHA() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -156,31 +161,36 @@ String httpGETRequest(const char* serverName) {
 }
 
 void showTemperatureOutside() {
-  if (WiFi.status() == WL_CONNECTED) {
-    String serverPath = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "," + countryCode + "&APPID=" + openWeatherMapApiKey + "&units=metric";
+  if (outsideTempAge >= MAX_TEMP_AGE) {
+    if (WiFi.status() == WL_CONNECTED) {
+      String serverPath = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "," + countryCode + "&APPID=" + openWeatherMapApiKey + "&units=metric";
 
-    jsonBuffer = httpGETRequest(serverPath.c_str());
-    Serial.println(jsonBuffer);
-    DynamicJsonDocument myObject(1024 * 2);  // Adjust the size according to your JSON string
+      jsonBuffer = httpGETRequest(serverPath.c_str());
+      Serial.println(jsonBuffer);
+      DynamicJsonDocument myObject(1024 * 2);  // Adjust the size according to your JSON string
 
-    DeserializationError error = deserializeJson(myObject, jsonBuffer);
-    if (error) {
-      Serial.print("Deserialization failed: ");
-      Serial.println(error.c_str());
-      return;
+      DeserializationError error = deserializeJson(myObject, jsonBuffer);
+      if (error) {
+        Serial.print("Deserialization failed: ");
+        Serial.println(error.c_str());
+        return;
+      }
+
+      Serial.print("Temperature: ");
+      float temp = myObject["main"]["temp"];
+      Serial.println(temp);
+
+      sprintf(outsideTempValue, "%.1fC", temp);
+
+    } else {
+      Serial.println("WiFi Disconnected");
     }
-
-    Serial.print("Temperature: ");
-    float temp = myObject["main"]["temp"];
-    Serial.println(temp);
-    char message[8] = "0.00";
-    sprintf(message, "%.1fC", temp);
-    Serial.println(message);
-    mx.displayText(message, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
-    mx.displayAnimate();
-  } else {
-    Serial.println("WiFi Disconnected");
+    outsideTempAge = 0;
   }
+  Serial.println(outsideTempValue);
+  mx.displayText(outsideTempValue, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
+  mx.displayAnimate();
+  outsideTempAge++;
 }
 
 // todo  P.displayShutdown(true); if it is switchd off?
@@ -225,23 +235,28 @@ void displayScrollText(char* message) {
   while (!mx.displayAnimate()) { ; }
 }
 
-void updateBrightness(){
-   int analogValue = analogRead(36);
-  float brightness = analogValue/256;
-  mx.setIntensity(brightness);
+void updateBrightness() {
+  int analogValue = analogRead(36);
+  float brightness = analogValue / 256;
+  mx.setIntensity(8);
 }
 void loop() {
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
     updateBrightness();
     showTime();
     delay(1000);
   }
-  Serial.println("Digital: ");
-  int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
-  Serial.println(digitalValue);
-  if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
-    showSpotifyCurrentlyPlaying();
+  //Serial.println("Digital: ");
+  //int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
+  //Serial.println(digitalValue);
+  //if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
+  showSpotifyCurrentlyPlaying();
+    for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
+    updateBrightness();
+    showTime();
+    delay(1000);
   }
-  //showTemperatureOutside();
+  // }
+  showTemperatureOutside();
   //delay(100000);
 }
