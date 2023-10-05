@@ -36,7 +36,7 @@ unsigned long requestDueTime;                //time when request due
 
 // Homeassistant
 const char* homeAssistantUrl = "192.168.0.103";
-const char* sensorEntityId = "your_sensor_entity_id";
+const char* sensorEntityId = "sensor.ewelink_th01_temperature";
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
@@ -65,41 +65,12 @@ String city = "Munich";
 String countryCode = "DE";
 String jsonBuffer;
 
-#define MAX_TEMP_AGE 60;
+#define MAX_TEMP_AGE 60
 int outsideTempAge = MAX_TEMP_AGE;
 char outsideTempValue[8] = "00:00";
-
+int insideTempAge = MAX_TEMP_AGE;
+char insideTempValue[8] = "00:00";
 #define CONTINUOUS_CLOCK_SECONDS 15
-void readFromHA() {
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
-  }
-  Serial.println("Connected to WiFi");
-
-  // Make the REST request
-  String apiEndpoint = "http://" + String(homeAssistantUrl) + ":8123/api/states/" + String(sensorEntityId);
-  HTTPClient http;
-
-  // Set the authorization header
-  String bearerToken = "Bearer " + String(homeAssistantToken);
-  WiFiClient client;
-  http.begin(client, apiEndpoint.c_str());
-  http.addHeader("Authorization", bearerToken.c_str());
-
-  // Send GET request
-  int httpResponseCode = http.GET();
-
-  if (httpResponseCode > 0) {
-    String response = http.getString();
-    Serial.println(httpResponseCode);
-    Serial.println(response);
-  } else {
-    Serial.print("Error on HTTP request: ");
-    Serial.println(httpResponseCode);
-  }
-  http.end();
-}
 
 
 void setup() {
@@ -133,6 +104,52 @@ void setup() {
   }
 }
 
+void readInsideTempFromHA() {
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+
+  // Make the REST request
+  String apiEndpoint = "http://" + String(homeAssistantUrl) + ":8123/api/states/" + String(sensorEntityId);
+  HTTPClient http;
+
+  // Set the authorization header
+  String bearerToken = "Bearer " + String(homeAssistantToken);
+  WiFiClient client;
+  http.begin(client, apiEndpoint.c_str());
+  http.addHeader("Authorization", bearerToken.c_str());
+
+  // Send GET request
+  int httpResponseCode = http.GET();
+
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(httpResponseCode);
+    Serial.println(response);
+    DynamicJsonDocument myObject(1024 * 2);  // Adjust the size according to your JSON string
+
+    DeserializationError error = deserializeJson(myObject, response);
+    if (error) {
+      Serial.print("Deserialization failed: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    Serial.print("Temperature: ");
+    float temp = myObject["state"];
+    Serial.println(temp);
+    sprintf(insideTempValue, "%.1fC", temp);
+
+  } else {
+    Serial.print("Error on HTTP request: ");
+    Serial.println(httpResponseCode);
+  }
+  http.end();
+  mx.displayText(insideTempValue, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
+  mx.displayAnimate();
+}
 
 String httpGETRequest(const char* serverName) {
   WiFiClient client;
@@ -181,13 +198,13 @@ void showTemperatureOutside() {
       Serial.println(temp);
 
       sprintf(outsideTempValue, "%.1fC", temp);
-
+      Serial.println(outsideTempValue);
     } else {
       Serial.println("WiFi Disconnected");
     }
     outsideTempAge = 0;
   }
-  Serial.println(outsideTempValue);
+
   mx.displayText(outsideTempValue, PA_CENTER, 25, 500, PA_PRINT, PA_PRINT);
   mx.displayAnimate();
   outsideTempAge++;
@@ -241,7 +258,9 @@ void updateBrightness() {
   mx.setIntensity(8);
 }
 void loop() {
-  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
+  readInsideTempFromHA();
+  delay(10000);
+  /*  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
     updateBrightness();
     showTime();
     delay(1000);
@@ -257,6 +276,6 @@ void loop() {
     delay(1000);
   }
   // }
-  showTemperatureOutside();
+  showTemperatureOutside();*/
   //delay(100000);
 }
