@@ -1,9 +1,11 @@
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266Ping.h>
 #elif defined(ESP32)
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ESPping.h>
 #endif
 
 #include <WiFiClientSecure.h>
@@ -13,14 +15,11 @@
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
 #include <SPI.h>
-//#include <Arduino_JSON.h>
 #include "credentials.h"
-
 
 #include <SpotifyArduino.h>
 #include <SpotifyArduinoCert.h>
 #include <ArduinoJson.h>
-
 
 #define GPIO_POTI 36
 #define GPIO_SWITCH_SPOTIFY 23
@@ -30,13 +29,8 @@
 WiFiClientSecure client;
 SpotifyArduino spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
 
-unsigned long delayBetweenRequests = 60000;  // Time between requests (1 minute)
-unsigned long requestDueTime;                //time when request due
-
-
-// Homeassistant
-const char* homeAssistantUrl = "192.168.0.103";
-const char* sensorEntityId = "sensor.ewelink_th01_temperature";
+//"person.tobias"
+//"device_tracker.oneplus_a6013"; 
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
@@ -66,13 +60,15 @@ String countryCode = "DE";
 String jsonBuffer;
 
 #define MAX_TEMP_AGE 60
+#define CONTINUOUS_CLOCK_SECONDS 15
+
 int outsideTempAge = MAX_TEMP_AGE;
 char outsideTempValue[8] = "00:00";
 int insideTempAge = MAX_TEMP_AGE;
 char insideTempValue[8] = "00:00";
-#define CONTINUOUS_CLOCK_SECONDS 15
 
 
+boolean matrix_cleared=true;
 void setup() {
   Serial.begin(115200);
   mx.begin();
@@ -112,7 +108,7 @@ void readInsideTempFromHA() {
   Serial.println("Connected to WiFi");
 
   // Make the REST request
-  String apiEndpoint = "http://" + String(homeAssistantUrl) + ":8123/api/states/" + String(sensorEntityId);
+  String apiEndpoint = "http://" + String(HA_IP_ADDRESS) + ":8123/api/states/" + String(HA_TEMP_SENSOR);
   HTTPClient http;
 
   // Set the authorization header
@@ -248,7 +244,7 @@ void showSpotifyCurrentlyPlaying() {
 }
 void displayScrollText(char* message) {
   mx.displayClear();
-  mx.displayScroll(message, PA_RIGHT, PA_SCROLL_LEFT, 40);
+  mx.displayScroll(message, PA_RIGHT, PA_SCROLL_LEFT, 48);
   while (!mx.displayAnimate()) { ; }
 }
 
@@ -257,25 +253,38 @@ void updateBrightness() {
   float brightness = analogValue / 256;
   mx.setIntensity(8);
 }
+
+boolean pingPhone() {
+    return ;
+}
 void loop() {
-  readInsideTempFromHA();
-  delay(10000);
-  /*  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
-    updateBrightness();
-    showTime();
-    delay(1000);
-  }
-  //Serial.println("Digital: ");
-  //int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
-  //Serial.println(digitalValue);
-  //if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
-  showSpotifyCurrentlyPlaying();
+  if (Ping.ping(PHONE_IP)) {
     for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
-    updateBrightness();
-    showTime();
+      updateBrightness();
+      showTime();
+      delay(1000);
+    }
+    //Serial.println("Digital: ");
+    //int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
+    //Serial.println(digitalValue);
+    //if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
+    showSpotifyCurrentlyPlaying();
+    for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
+      updateBrightness();
+      showTime();
+      delay(1000);
+    }
+    matrix_cleared = false;
+    // }
+    showTemperatureOutside();
     delay(1000);
+    readInsideTempFromHA();
+    delay(1000);
+  } else {
+    if (!matrix_cleared) {
+      matrix_cleared = true;
+      mx.displayClear();
+    }
+    delay(30000);
   }
-  // }
-  showTemperatureOutside();*/
-  //delay(100000);
 }
