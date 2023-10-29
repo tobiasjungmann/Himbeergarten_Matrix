@@ -15,22 +15,18 @@
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
 #include <SPI.h>
-#include "credentials.h"
 
 #include <SpotifyArduino.h>
 #include <SpotifyArduinoCert.h>
 #include <ArduinoJson.h>
 
-#define GPIO_POTI 36
-#define GPIO_SWITCH_SPOTIFY 23
+#include "credentials.h"
+#include "gpio_config.h"
 
 // Spotify
 #define SPOTIFY_MARKET "DE"
 WiFiClientSecure client;
 SpotifyArduino spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
-
-//"person.tobias"
-//"device_tracker.oneplus_a6013"; 
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
@@ -39,20 +35,19 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600);
 // Matrix
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4
-
-#if defined(ESP8266)
-#define CLK_PIN 6   // or SCK
-#define CS_PIN 7    // or SS
-#define DATA_PIN 8  // or MOSI
-#elif defined(ESP32)
-#define CLK_PIN 12   // or SCK
-#define CS_PIN 14    // or SS
-#define DATA_PIN 27  // or MOSI
-#endif
-
 #define CHAR_SPACING 4  // pixels between characters
 //MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 MD_Parola mx = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+
+
+enum matrixState {
+  DISPLAY_OFF,
+  SPOTIFY,
+  CLOCK,
+  WEATHER_OUTSIDE,
+  WEATHER_INSIDE
+};
+
 
 // Weather
 String city = "Munich";
@@ -60,15 +55,17 @@ String countryCode = "DE";
 String jsonBuffer;
 
 #define MAX_TEMP_AGE 60
-#define CONTINUOUS_CLOCK_SECONDS 15
+#define CONTINUOUS_CLOCK_SECONDS 40
+#define TIME_BETWEEN_PINGS 30000  //30sec
 
 int outsideTempAge = MAX_TEMP_AGE;
 char outsideTempValue[8] = "00:00";
 int insideTempAge = MAX_TEMP_AGE;
 char insideTempValue[8] = "00:00";
 
+// states whether something is currently displayed in the matrix
+boolean matrix_cleared = true;
 
-boolean matrix_cleared=true;
 void setup() {
   Serial.begin(115200);
   mx.begin();
@@ -98,6 +95,11 @@ void setup() {
   if (!spotify.refreshAccessToken()) {
     Serial.println("Failed to get access tokens");
   }
+
+  pinMode(GPIO_SWITCH_SPOTIFY, INPUT_PULLDOWN);
+  pinMode(GPIO_SWITCH_WEATHER_OUTSIDE, INPUT_PULLDOWN);
+  pinMode(GPIO_SWITCH_WEATHER_INSIDE, INPUT_PULLDOWN);
+  pinMode(GPIO_SWITCH_TIME, INPUT_PULLDOWN);
 }
 
 void readInsideTempFromHA() {
@@ -249,42 +251,45 @@ void displayScrollText(char* message) {
 }
 
 void updateBrightness() {
-  int analogValue = analogRead(36);
+  int analogValue = analogRead(GPIO_POTI);
   float brightness = analogValue / 256;
-  mx.setIntensity(8);
+  mx.setIntensity(brightness);
 }
 
-boolean pingPhone() {
-    return ;
+void displayClock() {
+  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
+    updateBrightness();
+    showTime();
+    delay(1000);
+  }
+  // todo entscheiden, welcher special zustand als nächstes ausgeführt wird
+  /*
+   variable
+   die die cycel länge angibt - un der hälfte und am ende prüfen, 
+   braucht es dei enums dann n och? - würde nur auf der Zahl laufen
+   */
 }
+
 void loop() {
-  if (Ping.ping(PHONE_IP)) {
-    for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
-      updateBrightness();
-      showTime();
-      delay(1000);
-    }
-    //Serial.println("Digital: ");
-    //int digitalValue=digitalRead(GPIO_SWITCH_SPOTIFY);
-    //Serial.println(digitalValue);
-    //if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
-    showSpotifyCurrentlyPlaying();
-    for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
-      updateBrightness();
-      showTime();
-      delay(1000);
+  matrixState current_state = CLOCK;
+
+  if (Ping.ping(PHONE_IP) && (digitalRead(GPIO_SWITCH_SPOTIFY) || digitalRead(GPIO_SWITCH_TIME) || digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) || digitalRead(GPIO_SWITCH_WEATHER_INSIDE))) {
+    while (1) {
+      switch (current_state) {
+        case DISPLAY_OFF: break;
+        case SPOTIFY: digitalRead(GPIO_SWITCH_SPOTIFY) ? showSpotifyCurrentlyPlaying() : current_state = CLOCK; break;
+        case CLOCK: digitalRead(GPIO_SWITCH_TIME) ? displayClock() : current_state = WEATHER_OUTSIDE; break;
+        case WEATHER_OUTSIDE: digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) ? showTemperatureOutside() : current_state = WEATHER_INSIDE; break;
+        case WEATHER_INSIDE: digitalRead(GPIO_SWITCH_WEATHER_INSIDE) ? readInsideTempFromHA() : current_state = CLOCK; break;
+        default: current_state = CLOCK; break;
+      }
     }
     matrix_cleared = false;
-    // }
-    showTemperatureOutside();
-    delay(1000);
-    readInsideTempFromHA();
-    delay(1000);
   } else {
     if (!matrix_cleared) {
       matrix_cleared = true;
       mx.displayClear();
     }
-    delay(30000);
+    delay(TIME_BETWEEN_PINGS);
   }
 }
