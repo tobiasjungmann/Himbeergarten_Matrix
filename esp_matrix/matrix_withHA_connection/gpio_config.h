@@ -1,8 +1,15 @@
 #define GPIO_POTI 36
-#define GPIO_SWITCH_SPOTIFY 19
-#define GPIO_SWITCH_WEATHER_OUTSIDE 18
-#define GPIO_SWITCH_WEATHER_INSIDE 5
-#define GPIO_SWITCH_TIME 17
+
+// Switches Labeld from the right (0) to the poti (3) 
+#define SWITCH_0 19
+#define SWITCH_1 18
+#define SWITCH_2 5
+#define SWITCH_3 17
+
+#define GPIO_SWITCH_SPOTIFY SWITCH_0
+#define GPIO_SWITCH_WEATHER_OUTSIDE SWITCH_1
+#define GPIO_SWITCH_WEATHER_INSIDE SWITCH_2
+#define GPIO_SWITCH_TIME SWITCH_3
 
 #if defined(ESP8266)
 #define CLK_PIN 6   // or SCK

@@ -23,6 +23,9 @@
 #include "credentials.h"
 #include "gpio_config.h"
 
+size_t current_pos = 0;
+size_t max_pos = 80;
+
 // Spotify
 #define SPOTIFY_MARKET "DE"
 WiFiClientSecure client;
@@ -257,39 +260,43 @@ void updateBrightness() {
 }
 
 void displayClock() {
-  for (int i = 0; i < CONTINUOUS_CLOCK_SECONDS; i++) {
-    updateBrightness();
-    showTime();
-    delay(1000);
-  }
-  // todo entscheiden, welcher special zustand als nächstes ausgeführt wird
-  /*
-   variable
-   die die cycel länge angibt - un der hälfte und am ende prüfen, 
-   braucht es dei enums dann n och? - würde nur auf der Zahl laufen
-   */
+  updateBrightness();
+  showTime();
+  delay(1000);
 }
 
+
 void loop() {
-  matrixState current_state = CLOCK;
 
   if (Ping.ping(PHONE_IP) && (digitalRead(GPIO_SWITCH_SPOTIFY) || digitalRead(GPIO_SWITCH_TIME) || digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) || digitalRead(GPIO_SWITCH_WEATHER_INSIDE))) {
-    while (1) {
-      switch (current_state) {
-        case DISPLAY_OFF: break;
-        case SPOTIFY: digitalRead(GPIO_SWITCH_SPOTIFY) ? showSpotifyCurrentlyPlaying() : current_state = CLOCK; break;
-        case CLOCK: digitalRead(GPIO_SWITCH_TIME) ? displayClock() : current_state = WEATHER_OUTSIDE; break;
-        case WEATHER_OUTSIDE: digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) ? showTemperatureOutside() : current_state = WEATHER_INSIDE; break;
-        case WEATHER_INSIDE: digitalRead(GPIO_SWITCH_WEATHER_INSIDE) ? readInsideTempFromHA() : current_state = CLOCK; break;
-        default: current_state = CLOCK; break;
-      }
+
+    if (current_pos == max_pos / 2) {
+ 
+      if (digitalRead(GPIO_SWITCH_SPOTIFY)) {      Serial.println("Spotify");showSpotifyCurrentlyPlaying(); }
+    } else if (current_pos == max_pos) {
+      current_pos = 0;
+   
+      if (digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE)) {    Serial.println("Temp 1");showTemperatureOutside(); }
+      delay(1000);
+    
+      if (digitalRead(GPIO_SWITCH_WEATHER_INSIDE)) {  Serial.println("Temp 2"); readInsideTempFromHA(); }
+      delay(1000);
+    } else {
+      
+      if (digitalRead(GPIO_SWITCH_TIME)) { 
+        Serial.println("Time");
+        displayClock(); }
     }
+
     matrix_cleared = false;
+    current_pos++;
   } else {
+    Serial.println("Going to sleep");
     if (!matrix_cleared) {
       matrix_cleared = true;
       mx.displayClear();
     }
+    current_pos = 0;
     delay(TIME_BETWEEN_PINGS);
   }
 }
