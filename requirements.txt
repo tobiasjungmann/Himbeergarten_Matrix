@@ -1,9 +1,0 @@
-spotipy
-mvg-api
-netifaces
-python-weather
-RPi.GPIO
-grpcio-tools
-luma.led_matrix
-pytz
-requests
