@@ -1,3 +1,6 @@
+#ifndef GPIO_CONFIG_H
+#define GPIO_CONFIG_H
+
 #define GPIO_POTI 36
 
 // Switches Labeld from the right (0) to the poti (3) 
@@ -20,3 +23,4 @@
 #define CS_PIN 14    // or SS
 #define DATA_PIN 27  // or MOSI
 #endif
+#endif //GPIO_CONFIG
