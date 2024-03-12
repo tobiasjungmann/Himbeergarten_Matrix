@@ -20,7 +20,7 @@ namespace spotify{
 // Spotify
 #define SPOTIFY_MARKET "DE"
 WiFiClientSecure client;
-SpotifyArduino spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
+SpotifyArduino spotify(client, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN);
 
 void setup() {
 #if defined(ESP8266)

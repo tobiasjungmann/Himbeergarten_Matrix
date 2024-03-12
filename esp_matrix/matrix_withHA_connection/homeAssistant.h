@@ -3,7 +3,6 @@
 
 namespace homeAssistant{
 void showTemperature();
-void test();
 }
 
 #endif //HOME_ASSISTANT_H

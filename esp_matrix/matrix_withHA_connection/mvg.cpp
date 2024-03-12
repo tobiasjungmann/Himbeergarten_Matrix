@@ -27,7 +27,6 @@ String getTrainDeprature(String from, String to) {
                + String("&routingDateTimeIsArrival=false&transportTypes=SCHIFF,RUFTAXI,BAHN,UBAHN,TRAM,SBAHN,BUS,REGIONAL_BUS");
   Serial.println(url);
   String departure_data = httpRequest::httpRequest(url.c_str());
-  //Serial.println(departure_data);
 
   //Less memory consumption than complete JSON deserialization
   int index = departure_data.indexOf("plannedDeparture");

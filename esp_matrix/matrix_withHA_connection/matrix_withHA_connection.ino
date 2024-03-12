@@ -12,8 +12,6 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-#include <ArduinoJson.h>
-
 #include "credentials.h"
 #include "gpio_config.h"
 #include "spotify.h"
@@ -127,10 +125,8 @@ void loop() {
   } else {
     matrix::matrixActivateSleep();
     Serial.println("Going to sleep");
-    //current_pos = 0;
     delay(TIME_BETWEEN_PINGS);
   }
-Serial.println("test");
   mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
   delay(10000);
 }
