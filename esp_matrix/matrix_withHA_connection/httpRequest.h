@@ -5,6 +5,7 @@ String httpGETRequest(const char* serverName);
 
 String httpRequest(const char* serverName) ;
 String httpRequestHA(const char* serverName);
+void setup();
 }
 
 #endif

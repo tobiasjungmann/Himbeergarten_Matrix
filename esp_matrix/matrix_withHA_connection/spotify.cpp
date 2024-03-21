@@ -47,6 +47,7 @@ void printCurrentlyPlayingSpotify(CurrentlyPlaying currentlyPlaying) {
 }
 
 void showSpotifyCurrentlyPlaying() {
+  Serial.println("Show sotify");
   int status = spotify.getCurrentlyPlaying(printCurrentlyPlayingSpotify, SPOTIFY_MARKET);
   if (status == 200) {
     Serial.println("Successfully got currently playing");

@@ -25,7 +25,7 @@ size_t current_pos = 0;
 size_t max_pos = 80;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "us.pool.ntp.org");  //3600);
+NTPClient timeClient(ntpUDP, "us.pool.ntp.org");
 
 
 #define CONTINUOUS_CLOCK_SECONDS 40
@@ -39,6 +39,13 @@ NTPClient timeClient(ntpUDP, "us.pool.ntp.org");  //3600);
 void setup() {
   Serial.begin(115200);
 
+  httpRequest::setup();
+    Serial.println("Before HA init");
+  homeAssistant::setup();
+  Serial.println("After HA init");
+  matrix::setup();
+  spotify::setup();
+
   // Initialize the NTP client
   timeClient.begin();
   timeClient.setTimeOffset(3600);  // Set your time zone offset (in seconds) here
@@ -49,9 +56,6 @@ void setup() {
   pinMode(GPIO_SWITCH_WEATHER_OUTSIDE, INPUT_PULLDOWN);
   pinMode(GPIO_SWITCH_WEATHER_INSIDE, INPUT_PULLDOWN);
   pinMode(GPIO_SWITCH_TIME, INPUT_PULLDOWN);
-
-  matrix::setup();
-  spotify::setup();
 }
 
 
@@ -102,6 +106,8 @@ void executeCurrentStage() {
       if (digitalRead(GPIO_SWITCH_WEATHER_INSIDE)) {
         homeAssistant::showTemperature();
         delay(INTERVAL_TEMP_UPDATE);
+        //mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
+        //delay(10000);
       }
 
     } else {
@@ -118,7 +124,7 @@ void executeCurrentStage() {
 
 
 void loop() {
-  bool pingres = Ping.ping(PHONE_IP);
+  bool pingres = true;  //Ping.ping(PHONE_IP);
   printDebugSwitches(pingres);
   if (pingres && (digitalRead(GPIO_SWITCH_SPOTIFY) || digitalRead(GPIO_SWITCH_TIME) || digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) || digitalRead(GPIO_SWITCH_WEATHER_INSIDE))) {
     executeCurrentStage();
@@ -127,6 +133,4 @@ void loop() {
     Serial.println("Going to sleep");
     delay(TIME_BETWEEN_PINGS);
   }
-  mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
-  delay(10000);
 }

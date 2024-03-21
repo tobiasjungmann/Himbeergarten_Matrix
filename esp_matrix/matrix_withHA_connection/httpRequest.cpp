@@ -13,7 +13,7 @@ namespace httpRequest {
 
 void waitForConnection() {
   // Connect to Wi-Fi
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  // not every single time: WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
 #ifdef DEBUG
@@ -27,6 +27,11 @@ void waitForConnection() {
 #endif
 }
 
+void setup() {
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  waitForConnection();
+}
+
 String performGet(HTTPClient&& http) {
   int httpResponseCode = http.GET();
 
@@ -37,7 +42,10 @@ String performGet(HTTPClient&& http) {
     Serial.println(httpResponseCode);
 #else
 #endif
-    payload = http.getString();
+// todo better status handling - e.g. nonreachable
+    if (httpResponseCode != 404) {
+      payload = http.getString(); 
+    }
   } else {
 #ifdef DEBUG
     Serial.print("HTTP Error code: ");
