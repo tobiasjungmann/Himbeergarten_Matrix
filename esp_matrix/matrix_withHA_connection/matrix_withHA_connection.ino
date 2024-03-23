@@ -38,13 +38,16 @@ NTPClient timeClient(ntpUDP, "us.pool.ntp.org");
 
 void setup() {
   Serial.begin(115200);
-
   httpRequest::setup();
-    Serial.println("Before HA init");
-  homeAssistant::setup();
+  //homeAssistant::setup();
+
   Serial.println("After HA init");
   matrix::setup();
   spotify::setup();
+
+  Serial.println("Loading Humidity: ");
+  homeAssistant::showHumidityInPercent();
+  //homeAssistant::getStatesToShow();
 
   // Initialize the NTP client
   timeClient.begin();
@@ -109,6 +112,9 @@ void executeCurrentStage() {
         //mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
         //delay(10000);
       }
+
+      mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
+      homeAssistant::showHumidityInPercent();
 
     } else {
       if (digitalRead(GPIO_SWITCH_TIME)) {

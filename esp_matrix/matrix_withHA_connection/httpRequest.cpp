@@ -16,10 +16,10 @@ void waitForConnection() {
   // not every single time: WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-#ifdef DEBUG
+//#ifdef DEBUG
     Serial.println("Connecting to WiFi...");
-#else
-#endif
+//#else
+//#endif
   }
 #ifdef DEBUG
   Serial.println("Connected to WiFi");
@@ -28,6 +28,7 @@ void waitForConnection() {
 }
 
 void setup() {
+  Serial.println("Before Internet setup");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   waitForConnection();
 }

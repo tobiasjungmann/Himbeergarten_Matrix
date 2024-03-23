@@ -8,10 +8,13 @@ enum MatrixState {
   TRAIN,
   TEMP_INSIDE,
   TEMP_OUTSIDE,
-  TIME
+  TIME,
+  HUMIDITY
 };
 
+void getStatesToShow();
 void showTemperature();
+void showHumidityInPercent();
 
 /**
 * Adds the necessary sensors to the Home assistant instance which are available for this matrix esp
