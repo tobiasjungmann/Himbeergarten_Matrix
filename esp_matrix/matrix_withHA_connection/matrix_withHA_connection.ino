@@ -33,21 +33,23 @@ NTPClient timeClient(ntpUDP, "us.pool.ntp.org");
 #define INTERVAL_TEMP_UPDATE 2000
 #define INTERVAL_CLOCK_UPDATE 1000
 
+#define STATE_BASED_ON_HA  // Remove if the physical switches should be used to activate/deactivate states, if defined the HA defines a set of active matrix states
+uint8_t nextSpecialState = 0;
 
-
+std::vector<homeAssistant::MatrixState> activeMatrixStates;
 
 void setup() {
   Serial.begin(115200);
   httpRequest::setup();
-  //homeAssistant::setup();
+  //homeAssistant::setup();   // todo soll liste mit aktiven enums zurückgegebe - dadurch cyclen udn je nach stand alle x sekundenn einen entry zeigen
 
   Serial.println("After HA init");
   matrix::setup();
   spotify::setup();
 
-  Serial.println("Loading Humidity: ");
-  homeAssistant::showHumidityInPercent();
-  //homeAssistant::getStatesToShow();
+  //Serial.println("Loading Humidity: ");
+  //homeAssistant::showHumidityInPercent();
+  activeMatrixStates = homeAssistant::getStatesToShow();
 
   // Initialize the NTP client
   timeClient.begin();
@@ -93,6 +95,7 @@ void printDebugSwitches(bool pingres) {
 }
 
 void executeCurrentStage() {
+#ifdef STATE_BASED_ON_HA    // only compile the code for the preselected version - changing later not yet possible
   if (current_pos == max_pos / 2) {
     if (digitalRead(GPIO_SWITCH_SPOTIFY)) {
       Serial.println("Spotify");
@@ -109,8 +112,6 @@ void executeCurrentStage() {
       if (digitalRead(GPIO_SWITCH_WEATHER_INSIDE)) {
         homeAssistant::showTemperature();
         delay(INTERVAL_TEMP_UPDATE);
-        //mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
-        //delay(10000);
       }
 
       mvg::showMVGDepartureInfo("Garching", "Olympiazentrum");
@@ -124,6 +125,23 @@ void executeCurrentStage() {
       }
     }
   }
+#else
+  if (current_pos == max_pos) {
+    current_pos = 0;
+    nextSpecialState = (nextSpecialState++) % activeMatrixStates;
+    switch (activeMatrixStates[nextSpecialState]) {
+      case homeAssistant::SPOTIFY: spotify::showSpotifyCurrentlyPlaying(); break;
+      case homeAssistant::TRAIN: mvg::showMVGDepartureInfo("Garching", "Olympiazentrum"); break;
+      case homeAssistant::TEMP_OUTSIDE: homeAssistant::showTemperature(); delay(INTERVAL_TEMP_UPDATE); openWeather::showTemperature(); delay(INTERVAL_TEMP_UPDATE);break;
+      case homeAssistant::HUMIDITY: homeAssistant::showHumidityInPercent(); break;
+      default: break;
+    }
+    else {    // every other iteration which is not a special case
+      displayClock();
+      delay(INTERVAL_CLOCK_UPDATE);
+    }
+  }
+#endif
   current_pos++;
 }
 
@@ -132,7 +150,7 @@ void executeCurrentStage() {
 void loop() {
   bool pingres = true;  //Ping.ping(PHONE_IP);
   printDebugSwitches(pingres);
-  if (pingres && (digitalRead(GPIO_SWITCH_SPOTIFY) || digitalRead(GPIO_SWITCH_TIME) || digitalRead(GPIO_SWITCH_WEATHER_OUTSIDE) || digitalRead(GPIO_SWITCH_WEATHER_INSIDE))) {
+  if (pingres) {
     executeCurrentStage();
   } else {
     matrix::matrixActivateSleep();

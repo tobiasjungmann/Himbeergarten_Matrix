@@ -12,7 +12,7 @@ enum MatrixState {
   HUMIDITY
 };
 
-void getStatesToShow();
+//void getStatesToShow();
 void showTemperature();
 void showHumidityInPercent();
 
@@ -25,7 +25,7 @@ void setup();
 * Queries the state of the sensors which represent the different modes of the matrix
 */
 void updateSelectedStates();
-bool isStateVisible(MatrixState state);
+std::vector<MatrixState> getStatesToShow();
 }
 
 #endif  //HOME_ASSISTANT_H

@@ -1,3 +1,4 @@
+#include <vector>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -77,7 +78,7 @@ void showHumidityInPercent() {
   }
 }
 
-void getStatesToShow() {
+/*void getStatesToShow() {
   String url = ha_base_url + String("sensor.matrix_4_train");
   String payload = httpRequest::httpRequestHA(url.c_str());
   Serial.println(payload);
@@ -98,7 +99,7 @@ void getStatesToShow() {
 
   matrix::displayStaticText(insideTempValue);
 }
-
+*/
 void setup() {
   //delay(5000);
   //todo für jeden laufen lassen
@@ -154,6 +155,16 @@ void setup() {
   }*/
 }
 
+/**
+* todo implemnt to load current status from home assitant
+*/
 void updateSelectedStates();
-bool isStateVisible(MatrixState state);
+std::vector<MatrixState> getStatesToShow() {
+  return std::vector<MatrixState>{ SPOTIFY,
+                                   TRAIN,
+                                   TEMP_INSIDE,
+                                   TEMP_OUTSIDE,
+                                   TIME,
+                                   HUMIDITY };
+}
 }
