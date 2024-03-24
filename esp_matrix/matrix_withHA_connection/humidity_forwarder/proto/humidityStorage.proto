@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+package smart_home;
+option go_package = "github.com/tobiasjungmann/Himbeergarten_RPi/server/proto";
+option java_package = "com.example.rpicommunicator_v1";
+
+service HumidityStorage {
+  rpc storeHumidityEntry(StoreHumidityRequest) returns (StoreHumidityReply);
+  rpc GetActiveSensorsForDevice(GetActiveSensorsRequest) returns (GetActiveSensorsReply);
+}
+
+message StoreHumidityRequest{
+  required string deviceMAC = 1;
+  required int32 sensorId = 2;
+  required int32 humidity = 3;
+  required int32 humidityInPercent = 4;
+}
+
+message StoreHumidityReply{
+}
+
+message GetActiveSensorsRequest{
+  // Unique address of the device
+  required string deviceMAC = 1;
+  // set of all available sensors on hte device
+  repeated int32 availableSensors = 2;
+  required uint32 sensorCount=3;
+}
+
+message GetActiveSensorsReply{
+  repeated int32 sensors = 1;
+  required uint32 sensorCount=2;
+}

@@ -1,0 +1,3 @@
+smart_home.StoreHumidityRequest.deviceMAC max_size:24
+smart_home.GetActiveSensorsRequest.deviceMAC max_size:24
+smart_home.GetActiveSensorsReply.sensors max_size:16

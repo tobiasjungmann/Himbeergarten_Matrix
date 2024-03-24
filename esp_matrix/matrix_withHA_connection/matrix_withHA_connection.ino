@@ -20,6 +20,7 @@
 #include "httpRequest.h"
 #include "openWeather.h"
 #include "homeAssistant.h"
+//#include "humidity_forwarder/humidityReader.h"
 
 size_t current_pos = 0;
 size_t max_pos = 80;
@@ -41,16 +42,13 @@ std::vector<homeAssistant::MatrixState> activeMatrixStates;
 void setup() {
   Serial.begin(115200);
   httpRequest::setup();
-  //homeAssistant::setup();   // todo soll liste mit aktiven enums zurückgegebe - dadurch cyclen udn je nach stand alle x sekundenn einen entry zeigen
 
   Serial.println("After HA init");
   matrix::setup();
   spotify::setup();
 
-  //Serial.println("Loading Humidity: ");
-  //homeAssistant::showHumidityInPercent();
   activeMatrixStates = homeAssistant::getStatesToShow();
-
+//humidity::readAndForwardSensors();
   // Initialize the NTP client
   timeClient.begin();
   timeClient.setTimeOffset(3600);  // Set your time zone offset (in seconds) here
