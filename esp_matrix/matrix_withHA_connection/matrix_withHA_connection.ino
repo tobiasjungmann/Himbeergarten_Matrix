@@ -20,7 +20,7 @@
 #include "httpRequest.h"
 #include "openWeather.h"
 #include "homeAssistant.h"
-//#include "humidity_forwarder/humidityReader.h"
+#include "src/humidityReader.h"
 
 size_t current_pos = 0;
 size_t max_pos = 80;
@@ -146,7 +146,7 @@ void executeCurrentStage() {
 
 
 void loop() {
-  bool pingres = true;  //Ping.ping(PHONE_IP);
+  /*bool pingres = true;  //Ping.ping(PHONE_IP);
   printDebugSwitches(pingres);
   if (pingres) {
     executeCurrentStage();
@@ -154,5 +154,7 @@ void loop() {
     matrix::matrixActivateSleep();
     Serial.println("Going to sleep");
     delay(TIME_BETWEEN_PINGS);
-  }
+  }*/
+    humidityForwarder::readAndForwardSensors();
+    delay(2000);
 }

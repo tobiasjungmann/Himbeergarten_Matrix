@@ -4,7 +4,8 @@
 #include <WiFi.h>
 #endif
 
-#include "src/humidityStorage.pb.h"
+#include "../humidityReader.h"
+#include "humidityStorage.pb.h"
 #include "../../credentials.h"
 #include "sensorConfig.h"
 
@@ -13,7 +14,7 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 
-namespace humidity {
+namespace humidityForwarder {
 
 smart_home_StoreHumidityRequest message = smart_home_StoreHumidityRequest_init_zero;
 
