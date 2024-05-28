@@ -1,7 +1,8 @@
 #ifndef SENSORCONFIG_H
 #define SENSORCONFIG_H
 
-const char *FORWARDER_IP = "192.168.178.60";  // Ip address of the forwarder interface
+const char *FORWARDER_IP = "http://localRPi.local/";  // Ip address of the forwarder interface
+//const char *FORWARDER_IP = "192.168.178.60";  // Ip address of the forwarder interface
 const uint16_t FORWARDER_PORT = 12348;        // Port of the forwarder interface
 
 

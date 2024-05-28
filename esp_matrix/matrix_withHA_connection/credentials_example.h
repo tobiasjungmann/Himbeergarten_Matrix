@@ -2,7 +2,7 @@
 #define CRED_H
 /**
 * Example format for teh credentials file
-* rename to credentails.h and fill in own values.
+* rename to credentials.h and fill in own values.
 * credentials.h is in the .gitignore file
 */
 
@@ -22,9 +22,9 @@ static const char SPOTIFY_REFRESH_TOKEN[] =  "spotify_refresh_token";
 static const IPAddress PHONE_IP(192, 168, 178, 59);
 
 // Homeassistant
-static const char* HA_IP_ADDRESS = "192.168.178.61";
+static const char* HA_HOSTNAME = "localRPi";
 static const char* HA_TEMP_SENSOR = "sensor.ewelink_th01_temperature";
-static const char* HA_HUMIDITY_SENSORS[1] = {"sensor.esp_4c_11_ae_13_f2_ef_hum_5_percent"}; // query from the list of existant sensors once available
+static const char* HA_HUMIDITY_SENSORS[1] = {"sensor.esp_4c_11_ae_13_f2_ef_hum_5_percent"}; // query from the list of existent sensors once available
 static const char* HA_TOKEN = "homeassistant_token";
 
 #endif // CRED_H

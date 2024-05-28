@@ -4,6 +4,7 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ESPmDNS.h>
 #endif
 
 #include "httpRequest.h"
@@ -23,9 +24,27 @@ void waitForConnection() {
 #endif
 }
 
-void setup() {
+IPAddress setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  waitForConnection();
+  waitForConnection();//http://localRPi.local/
+
+    while(mdns_init()!= ESP_OK){
+        delay(1000);
+        Serial.println("Starting MDNS...");
+    }
+
+    Serial.println("MDNS started");
+
+    IPAddress serverIp;
+
+    while (serverIp.toString() == "0.0.0.0") {
+        Serial.println("Resolving host...");
+        delay(250);
+        serverIp = MDNS.queryHost(HA_HOSTNAME);
+    }
+
+    Serial.println("Host address resolved:");
+    Serial.println(serverIp.toString());
 }
 
 String performGet(HTTPClient&& http) {

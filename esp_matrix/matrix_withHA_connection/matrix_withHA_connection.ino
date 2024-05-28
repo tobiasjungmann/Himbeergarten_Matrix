@@ -41,14 +41,16 @@ std::vector<homeAssistant::MatrixState> activeMatrixStates;
 
 void setup() {
   Serial.begin(115200);
-  httpRequest::setup();
+  IPAddress forwarderAddress = httpRequest::setup();
 
   Serial.println("After HA init");
   matrix::setup();
   spotify::setup();
+  humidityForwarder::setup(forwarderAddress);
+  homeAssistant::setup(forwarderAddress);
 
   activeMatrixStates = homeAssistant::getStatesToShow();
-//humidity::readAndForwardSensors();
+
   // Initialize the NTP client
   timeClient.begin();
   timeClient.setTimeOffset(3600);  // Set your time zone offset (in seconds) here

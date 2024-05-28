@@ -30,7 +30,7 @@ struct StateInfo {
 
 int insideTempAge = MAX_TEMP_AGE;
 char insideTempValue[8] = "00:00";
-const String ha_base_url = "http://" + String(HA_IP_ADDRESS) + ":8123/api/states/";
+String ha_base_url;
 const String ha_base_sensor_id = "sensor.esp_matrix_";
 
 
@@ -100,7 +100,8 @@ void showHumidityInPercent() {
   matrix::displayStaticText(insideTempValue);
 }
 */
-void setup() {
+void setup(IPAddress forwarderAddress) {
+    ha_base_url = "http://" + forwarderAddress.toString() + ":8123/api/states/";
   //delay(5000);
   //todo für jeden laufen lassen
   String url = ha_base_url + ha_base_sensor_id + "_invalid_new3";
@@ -142,7 +143,7 @@ void setup() {
   //} else {
   //}
 
-  Serial.println("Senosor Setup completed");
+  Serial.println("Sensor Setup completed");
   delay(1000000);
 
   /*DynamicJsonDocument myObject(1024 * 2);

@@ -19,7 +19,7 @@ void showHumidityInPercent();
 /**
 * Adds the necessary sensors to the Home assistant instance which are available for this matrix esp
 */
-void setup();
+void setup(IPAddress forwarderAddress);
 
 /**
 * Queries the state of the sensors which represent the different modes of the matrix

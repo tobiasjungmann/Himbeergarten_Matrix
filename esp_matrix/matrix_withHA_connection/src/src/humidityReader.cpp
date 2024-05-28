@@ -18,6 +18,9 @@ namespace humidityForwarder {
 
 smart_home_StoreHumidityRequest message = smart_home_StoreHumidityRequest_init_zero;
 
+void setup(IPAddress forwarderAddress){
+
+    }
 /**
 * Establish the connection to the forwarder if it does not yet exist
 */
