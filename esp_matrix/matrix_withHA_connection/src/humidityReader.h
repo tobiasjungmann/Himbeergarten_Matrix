@@ -7,9 +7,10 @@ If the matrix displays also measure the plants close by, less esps are used and 
 
 #ifndef HUM_READER_H
 #define HUM_READER_H
-namespace humidityForwarder{
-void setup(IPAddress forwarderAddress);
-void readAndForwardSensors();
+namespace humidityForwarder {
+    void setup(IPAddress forwarderAddress);
+
+    void readAndForwardSensors();
 
 }  // namespace humidity
 #endif  // HUM_READER_H

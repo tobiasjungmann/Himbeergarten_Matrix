@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 namespace mvg {
-void showMVGDepartureInfo(String from, String to);
+    void showMVGDepartureInfo(String from, String to);
 }
 
 #endif  //MVG_H

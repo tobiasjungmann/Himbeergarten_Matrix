@@ -15,47 +15,47 @@
 #include "credentials.h"
 #include "matrix.h"
 
-namespace spotify{
+namespace spotify {
 
 // Spotify
 #define SPOTIFY_MARKET "DE"
-WiFiClientSecure client;
-SpotifyArduino spotify(client, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN);
+    WiFiClientSecure client;
+    SpotifyArduino spotify(client, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN);
 
-void setup() {
+    void setup() {
 #if defined(ESP8266)
-  client.setFingerprint(SPOTIFY_FINGERPRINT);  // These expire every few months
+        client.setFingerprint(SPOTIFY_FINGERPRINT);  // These expire every few months
 #elif defined(ESP32)
-  client.setCACert(spotify_server_cert);
+        client.setCACert(spotify_server_cert);
 #endif
-  //Serial.println("Refreshing Access Tokens");
-  //if (!spotify.refreshAccessToken()) {
-  //  Serial.println("Failed to get access tokens");
-  //}
-}
+        //Serial.println("Refreshing Access Tokens");
+        //if (!spotify.refreshAccessToken()) {
+        //  Serial.println("Failed to get access tokens");
+        //}
+    }
 
 
-void printCurrentlyPlayingSpotify(CurrentlyPlaying currentlyPlaying) {
-  if (currentlyPlaying.isPlaying) {
-    char message[256] = "";
-    sprintf(message, "%s - %s", currentlyPlaying.trackName, currentlyPlaying.artists[0].artistName);
+    void printCurrentlyPlayingSpotify(CurrentlyPlaying currentlyPlaying) {
+        if (currentlyPlaying.isPlaying) {
+            char message[256] = "";
+            sprintf(message, "%s - %s", currentlyPlaying.trackName, currentlyPlaying.artists[0].artistName);
 
-    matrix::displayScrollText(message);
-  } else {
-    Serial.println("Spotify is currently not playing");
-  }
-}
+            matrix::displayScrollText(message);
+        } else {
+            Serial.println("Spotify is currently not playing");
+        }
+    }
 
-void showSpotifyCurrentlyPlaying() {
-  Serial.println("Show sotify");
-  int status = spotify.getCurrentlyPlaying(printCurrentlyPlayingSpotify, SPOTIFY_MARKET);
-  if (status == 200) {
-    Serial.println("Successfully got currently playing");
-  } else if (status == 204) {
-    Serial.println("Doesn't seem to be anything playing");
-  } else {
-    Serial.print("Error: ");
-    Serial.println(status);
-  }
-}
+    void showSpotifyCurrentlyPlaying() {
+        Serial.println("Show sotify");
+        int status = spotify.getCurrentlyPlaying(printCurrentlyPlayingSpotify, SPOTIFY_MARKET);
+        if (status == 200) {
+            Serial.println("Successfully got currently playing");
+        } else if (status == 204) {
+            Serial.println("Doesn't seem to be anything playing");
+        } else {
+            Serial.print("Error: ");
+            Serial.println(status);
+        }
+    }
 }
